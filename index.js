@@ -1,3 +1,3 @@
-import { run } from '../app.js';
+import { run } from './app.js';
 
-run(process.env.NODE_ENV || development);
+run(process.env.NODE_ENV || "development");

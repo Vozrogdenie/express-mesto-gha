@@ -42,14 +42,16 @@ export const createUser = (req, res) => {
 };
 
 export const userId = (req, res) => {
-  User.findOne({ _id: req.params.userId })
+
+  if (req.params.userId.match(/^[0-9a-fA-F]{24}$/)) {
+    User.findOne({ _id: req.params.userId })
     .then(user => {
       if (user) return res.send(user)
       throw new Error('Пользователь не существует')
     })
     .catch((err) => {
       if (err.message === 'Пользователь не существует') {
-        res.status(constants.HTTP_STATUS_BAD_REQUEST).send({
+        res.status(constants.HTTP_STATUS_NOT_FOUND).send({
           message: `Некорректные данные для пользователя. ${err.message}`,
         })
       } else {
@@ -58,12 +60,20 @@ export const userId = (req, res) => {
         })
       }
     });
+  } else {
+    res.status(constants.HTTP_STATUS_BAD_REQUEST).send({
+      message: `Некорректный userId`,
+    })
+  }
 }
 
 export function newAvatar(req, res) {
+  const userId = req.body._id ? req.body._id : '6372633cfbdd1869c7d517f4';
+  const { avatar } = req.body;
+
   User.findByIdAndUpdate(
     req.params.cardId,
-    { $addToSet: { avatar: req.user._id } }, // добавить _id в массив, если его там нет
+    { $addToSet: { _id: req.params.userId } }, // добавить _id в массив, если его там нет
     { new: true }
   )
     .then(user => {
@@ -87,10 +97,9 @@ export function newAvatar(req, res) {
 };
 
 export function newProfile(req, res) {
-  User.findByIdAndUpdate(
-    req.params.cardId,
-    { new: true }
-  )
+  const userId = req.body._id ? req.body._id : '6372633cfbdd1869c7d517f4';
+  const { name, about } = req.body;
+  User.findByIdAndUpdate(userId, { name, about }, { new: true })
     .then(user => {
       if (user) return res.send(user)
       throw new Error('Профиля не существует')
@@ -106,7 +115,5 @@ export function newProfile(req, res) {
           .send({ message: 'Пользователь с указанным _id не найден.' })
       }
     })
-  res.status(constants.HTTP_STATUS_INTERNAL_SERVER_ERROR).send({
-    message: `На сервере произошла ошибка. ${err.message}`
-  })
+
 };
