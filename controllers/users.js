@@ -42,7 +42,6 @@ export const createUser = (req, res) => {
 };
 
 export const userId = (req, res) => {
-
   if (req.params.userId.match(/^[0-9a-fA-F]{24}$/)) {
     User.findOne({ _id: req.params.userId })
     .then(user => {
@@ -68,7 +67,6 @@ export const userId = (req, res) => {
 }
 
 export function newAvatar(req, res) {
-  const userId = req.body._id ? req.body._id : '6372633cfbdd1869c7d517f4';
   const { avatar } = req.body;
 
   User.findByIdAndUpdate(
@@ -97,9 +95,8 @@ export function newAvatar(req, res) {
 };
 
 export function newProfile(req, res) {
-  const userId = req.body._id ? req.body._id : '6372633cfbdd1869c7d517f4';
   const { name, about } = req.body;
-  User.findByIdAndUpdate(userId, { name, about }, { new: true })
+  User.findByIdAndUpdate(req.user._id, { name, about }, { new: true })
     .then(user => {
       if (user) return res.send(user)
       throw new Error('Профиля не существует')

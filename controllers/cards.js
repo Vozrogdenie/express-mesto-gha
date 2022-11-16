@@ -1,4 +1,5 @@
 import { constants } from 'http2';
+import { Card } from '../model/card.js';
 
 export function getCards(req, res) {
   find({}).populate('holder')
@@ -25,7 +26,7 @@ export function getCards(req, res) {
 export function createCard(req, res) {
   const { name, link } = req.body;
 
-  create({ name, link, holder: owner })
+  Card.create({ name, link, owner: req.user._id })
     .then(card => res.send({ data: card }))
     .catch((err) => {
       if (err._message === 'card validation failed') {
