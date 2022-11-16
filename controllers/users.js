@@ -8,7 +8,6 @@ export const getUsers = (req, res) => {
       throw new Error('Нет пользователей');
     })
     .catch((err) => {
-      console.log(err);
       if (err.message === 'Нет пользователей') {
         res
           .status(constants.HTTP_STATUS_NOT_FOUND)
@@ -44,10 +43,13 @@ export const createUser = (req, res) => {
 
 export const userId = (req, res) => {
   User.findOne({_id: req.params.userId})
-  .then(user => {res.send(user)})
+  .then(user => {
+    if (user) return res.send(user)
+    throw new Error('Пользователь не существует')
+  })
   .catch((err) => {
-    if (err.name === 'ValidatorError' || err.name === 'CastError') {
-      res.status(constants.HTTP_STATUS_BAD_REQUEST).send({
+    if (err.message === 'Пользователь не существует') {
+      res.status(constants.HTTP_STATUS_NOT_FOUND).send({
         message: `Некорректные данные для пользователя. ${err.message}`,
       })
     } else {
