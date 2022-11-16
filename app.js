@@ -2,7 +2,7 @@ import bodyParser from 'body-parser';
 import express from 'express';
 import mongoose from "mongoose";
 import { routerCard } from './routes/cards.js';
-import  {router}  from "./routes/users.js";
+import { router } from "./routes/users.js";
 import { constants } from 'http2';
 
 const { PORT = 3000 } = process.env;
@@ -57,5 +57,5 @@ app.get('*', (req, res) => {
 });
 
 app.listen(PORT, () => {
-    console.log(`App listening on port ${PORT}`)
+  console.log(`App listening on port ${PORT}`)
 })
