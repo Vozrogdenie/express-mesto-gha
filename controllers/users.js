@@ -68,7 +68,7 @@ export const userId = (req, res) => {
 
 export const newAvatar = (req, res) => {
   const { avatar } = req.body;
-  User.findByIdAndUpdate (req.user._id, {avatar}, { new: true }) // добавить _id в массив, если его там нет
+  User.findByIdAndUpdate (req.user._id, {avatar}, { new: true, runValidators: true }) // добавить _id в массив, если его там нет
     .then(user => {
       if (user) return res.send(user)
       throw new Error('Аватара не существует')
@@ -91,16 +91,16 @@ export const newAvatar = (req, res) => {
 
 export const newProfile = (req, res) => {
   const { name, about } = req.body;
-  User.findByIdAndUpdate(req.user._id, { name, about }, { new: true })
+  User.findByIdAndUpdate(req.user._id, { name, about }, { new: true, runValidators: true })
     .then(user => {
       if (user) return res.send(user)
       throw new Error('Профиля не существует')
     })
     .catch((err) => {
       if (err.message === 'Профиля не существует') {
-        res.status(constants.HTTP_STATUS_BAD_REQUEST).send({
-          message: `Переданы некорректные данные при обновлении профиля. ${err.message}`,
-        })
+        res
+        .status(constants.HTTP_STATUS_BAD_REQUEST)
+        .send({message: `Переданы некорректные данные при обновлении профиля.${err.message}`})
       } else {
         res
           .status(constants.HTTP_STATUS_NOT_FOUND)
