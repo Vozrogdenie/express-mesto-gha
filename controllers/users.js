@@ -66,14 +66,9 @@ export const userId = (req, res) => {
   }
 }
 
-export function newAvatar(req, res) {
+export const newAvatar = (req, res) => {
   const { avatar } = req.body;
-
-  User.findByIdAndUpdate(
-    req.params.cardId,
-    { $addToSet: { _id: req.params.userId } }, // добавить _id в массив, если его там нет
-    { new: true }
-  )
+  User.findByIdAndUpdate (req.user._id, {avatar}, { new: true }) // добавить _id в массив, если его там нет
     .then(user => {
       if (user) return res.send(user)
       throw new Error('Аватара не существует')
@@ -89,12 +84,12 @@ export function newAvatar(req, res) {
           .send({ message: 'Пользователь с указанным _id не найден.' })
       }
     })
-  res.status(constants.HTTP_STATUS_INTERNAL_SERVER_ERROR).send({
-    message: `На сервере произошла ошибка. ${err.message}`
-  })
+  // res.status(constants.HTTP_STATUS_INTERNAL_SERVER_ERROR).send({
+  //   message: `На сервере произошла ошибка. ${err.message}`
+  // })
 };
 
-export function newProfile(req, res) {
+export const newProfile = (req, res) => {
   const { name, about } = req.body;
   User.findByIdAndUpdate(req.user._id, { name, about }, { new: true })
     .then(user => {
