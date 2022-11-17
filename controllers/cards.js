@@ -42,7 +42,7 @@ export function createCard(req, res) {
 }
 
 export function deleteCard(req, res) {
-  findByIdAndRemove(req.params.id)
+  Card.findByIdAndRemove(req.params.cardId)
     .then(card => res.send({ data: card }))
     .catch((err) => {
       if (err._message === 'card validation failed') {
