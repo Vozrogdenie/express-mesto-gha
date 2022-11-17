@@ -2,7 +2,7 @@ import { constants } from 'http2';
 import { Card } from '../model/card.js';
 
 export function getCards(req, res) {
-  find({}).populate('holder')
+  Card.find({}).populate('owner')
     .then(cards => {
       if (cards) return res.send({ data: cards });
       throw new Error('Карточки не найдены');
@@ -74,13 +74,10 @@ export function likeCard(req, res) {
           message: `Переданы некорректные данные для постановки/снятии лайка. ${err.message}`,
         })
       } else {
-        res.status(constants.HTTP_STATUS_INTERNAL_SERVER_ERROR).send({
-          message: `На сервере произошла ошибка. ${err.message}`,
+        res.status(constants.HTTP_STATUS_INTERNAL_NOT_FOUND).send({
+          message: `Передан несуществующий _id карточки. ${err.message}`,
         })
       }
-      res
-        .status(constants.HTTP_STATUS_NOT_FOUND)
-        .send({ message: 'Передан несуществующий _id карточки.' })
     });
 };
 

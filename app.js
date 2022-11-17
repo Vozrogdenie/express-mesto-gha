@@ -31,7 +31,7 @@ export const run = async (envName) => {
         "message": "Запрашиваемая страница не найдена"
       })
   });
-
+mongoose.set('runValidators', true);
   await mongoose.connect('mongodb://localhost:27017/mestodb');
   const server = app.listen(config.PORT, config.HOST, () => {
     console.log(`Server run on http://${config.HOST}:${config.PORT}`);
