@@ -70,12 +70,12 @@ export function likeCard(req, res) {
     })
     .catch((err) => {
       if (err._message === 'card validation failed') {
-        res.status(constants.HTTP_STATUS_BAD_REQUEST).send({
-          message: `Переданы некорректные данные для постановки/снятии лайка. ${err.message}`,
+        res.status(constants.HTTP_STATUS_INTERNAL_SERVER_ERROR).send({
+          message: `Передан несуществующий _id карточки.${err.message}`,
         })
       } else {
-        res.status(constants.HTTP_STATUS_INTERNAL_SERVER_ERROR).send({
-          message: `Передан несуществующий _id карточки. ${err.message}`,
+        res.status(constants.HTTP_STATUS_BAD_REQUEST).send({
+          message: `Переданы некорректные данные для постановки/снятии лайка.${err.message}`,
         })
       }
     });
