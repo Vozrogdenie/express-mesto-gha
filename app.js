@@ -32,7 +32,7 @@ export const run = async (envName) => {
       res.status(500);
     res.render('error');
   });
-  app.get('*', (req, res) => {
+  app.all('*', (req, res) => {
     res
       .status(constants.HTTP_STATUS_NOT_FOUND)
       .send({

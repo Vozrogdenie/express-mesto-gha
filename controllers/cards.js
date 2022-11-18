@@ -68,8 +68,8 @@ export function likeCard(req, res) {
       throw new Error('Карточка не существует')
     })
     .catch((err) => {
-      if (err._message === 'card validation failed') {
-        res.status(constants.HTTP_STATUS_INTERNAL_SERVER_ERROR).send({
+      if (err._message === 'Карточка не существует') {
+        res.status(constants.HTTP_STATUS_NOT_FOUND).send({
           message: `Передан несуществующий _id карточки.${err.message}`,
         })
       } else {
@@ -87,12 +87,12 @@ export function dislikeCard(req, res) {
     { new: true }
   )
     .then((card) => {
-      if (card) {
-        res.send(card);
-      }
+      console.log(1, card)
+      if (card) return res.send(card)
+      throw new Error('Карточка не существует')
     })
     .catch((err) => {
-      if (err._message === 'card validation failed') {
+      if (err.message === 'Карточка не существует') {
         res.status(constants.HTTP_STATUS_BAD_REQUEST).send({
           message: `Переданы некорректные данные для постановки/снятии лайка. ${err.message}`,
         })
@@ -101,8 +101,8 @@ export function dislikeCard(req, res) {
           message: `На сервере произошла ошибка. ${err.message}`,
         })
       }
-      res
-        .status(constants.HTTP_STATUS_NOT_FOUND)
-        .send({ message: 'Передан несуществующий _id карточки.' })
+      // res
+      //   .status(constants.HTTP_STATUS_NOT_FOUND)
+      //   .send({ message: 'Передан несуществующий _id карточки.' })
     });
 };
