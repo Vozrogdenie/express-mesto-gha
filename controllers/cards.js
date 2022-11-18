@@ -74,7 +74,7 @@ export function likeCard(req, res) {
           message: `Переданы некорректные данные для постановки/снятии лайка. ${err.message}`,
         })
       } else {
-        res.status(constants.HTTP_STATUS_INTERNAL_NOT_FOUND).send({
+        res.status(constants.HTTP_STATUS_INTERNAL_SERVER_ERROR).send({
           message: `Передан несуществующий _id карточки. ${err.message}`,
         })
       }

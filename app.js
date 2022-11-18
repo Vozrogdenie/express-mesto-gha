@@ -24,6 +24,14 @@ export const run = async (envName) => {
 
   app.use('/', router);
   app.use('/', routerCard);
+  app.use(( err, req, res, next ) => {
+    res.locals.error = err;
+    if (err.status >= 100 && err.status < 600)
+      res.status(err.status);
+    else
+      res.status(500);
+    res.render('error');
+  });
   app.get('*', (req, res) => {
     res
       .status(constants.HTTP_STATUS_NOT_FOUND)
