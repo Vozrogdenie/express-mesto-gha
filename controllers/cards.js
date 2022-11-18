@@ -43,14 +43,17 @@ export function createCard(req, res) {
 
 export function deleteCard(req, res) {
   Card.findByIdAndRemove(req.params.cardId)
-    .then(card => res.send({ data: card }))
+    .then((card) => {
+      if(card) return res.send({ data: card })
+      throw new Error('card validation failed')
+    })
     .catch((err) => {
       if (err._message === 'card validation failed') {
-        res.status(constants.HTTP_STATUS_BAD_REQUEST).send({
+        res.status(constants.HTTP_STATUS_NOT_FOUND).send({
           message: ` Карточка с указанным _id не найдена. ${err.message}`,
         })
       } else {
-        res.status(constants.HTTP_STATUS_INTERNAL_SERVER_ERROR).send({
+        res.status(constants.HTTP_STATUS_BAD_REQUEST).send({
           message: `На сервере произошла ошибка. ${err.message}`,
         })
       }
@@ -93,11 +96,11 @@ export function dislikeCard(req, res) {
     })
     .catch((err) => {
       if (err.message === 'Карточка не существует') {
-        res.status(constants.HTTP_STATUS_INTERNAL_SERVER_ERROR).send({
+        res.status(constants.HTTP_STATUS_NOT_FOUND).send({
           message: `Переданы некорректные данные для постановки/снятии лайка. ${err.message}`,
         })
       } else {
-        res.status(constants.HTTP_STATUS_BAD_REQUEST).send({
+        res.status(constants.HTTP_STATUS_INTERNAL_SERVER_ERROR).send({
           message: `На сервере произошла ошибка. ${err.message}`,
         })
       }
