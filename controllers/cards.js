@@ -48,7 +48,7 @@ export function deleteCard(req, res) {
       throw new Error('card validation failed')
     })
     .catch((err) => {
-      if (err._message === 'card validation failed') {
+      if (err.message === 'card validation failed') {
         res.status(constants.HTTP_STATUS_NOT_FOUND).send({
           message: ` Карточка с указанным _id не найдена. ${err.message}`,
         })
@@ -100,7 +100,7 @@ export function dislikeCard(req, res) {
           message: `Переданы некорректные данные для постановки/снятии лайка. ${err.message}`,
         })
       } else {
-        res.status(constants.HTTP_STATUS_INTERNAL_SERVER_ERROR).send({
+        res.status(constants.HTTP_STATUS_BAD_REQUEST).send({
           message: `На сервере произошла ошибка. ${err.message}`,
         })
       }
