@@ -64,9 +64,8 @@ export function likeCard(req, res) {
     { new: true }
   )
     .then((card) => {
-      if (card) {
-        res.send(card);
-      }
+      if (card) return res.send(card)
+      throw new Error('Карточка не существует')
     })
     .catch((err) => {
       if (err._message === 'card validation failed') {
