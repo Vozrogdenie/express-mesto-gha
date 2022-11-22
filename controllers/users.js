@@ -46,18 +46,22 @@ export const getUserById = (req, res) => {
   User.findOne({ _id: req.params.userId })
     .then((user) => {
       if (user) return res.send(user);
-      throw new Error('Пользователь не существует');
+      throw new Error('Пользователь с указанным _id не найден.');
     })
     .catch((err) => {
-      if (err.message === 'Пользователь не существует') {
-        res.status(constants.HTTP_STATUS_NOT_FOUND).send({
-          message: `Некорректные данные для пользователя. ${err.message}`,
-        });
+      if (err.name === 'CastError') {
+        res
+          .status(constants.HTTP_STATUS_BAD_REQUEST)
+          .send({ message: 'Передан некорректный id' });
+      } else if (err.message === 'Пользователь с указанным _id не найден.') {
+        res
+          .status(constants.HTTP_STATUS_NOT_FOUND)
+          .send({ message: 'Пользователь с указанным _id не найден.' });
       } else {
-        console.log(err.message);
-        res.status(constants.HTTP_STATUS_INTERNAL_SERVER_ERROR).send({
-          message: 'На сервере произошла ошибка.',
-        });
+        console.log(err);
+        res
+          .status(constants.HTTP_STATUS_INTERNAL_SERVER_ERROR)
+          .send({ message: 'На сервере произошла ошибка.' });
       }
     });
 };
@@ -99,6 +103,10 @@ export const newProfile = (req, res) => {
         res
           .status(constants.HTTP_STATUS_BAD_REQUEST)
           .send({ message: 'Передан некорректный id' });
+      } else if (err.name === 'ValidationError') {
+        res
+          .status(constants.HTTP_STATUS_BAD_REQUEST)
+          .send({ message: 'Ошибка валидации' });
       } else if (err.message === 'Пользователь с указанным _id не найден.') {
         res
           .status(constants.HTTP_STATUS_NOT_FOUND)

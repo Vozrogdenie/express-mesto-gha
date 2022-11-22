@@ -47,17 +47,22 @@ export function deleteCard(req, res) {
   Card.findByIdAndRemove(req.params.cardId)
     .then((card) => {
       if (card) return res.send({ data: card });
-      throw new Error();
+      throw new Error('Карточка с указанным _id не найдена.');
     })
     .catch((err) => {
       if (err.name === 'CastError') {
         res
-          .status(constants.HTTP_STATUS_INTERNAL_SERVER_ERROR)
-          .send({ message: 'На сервере произошла ошибка.' });
-      } else {
+          .status(constants.HTTP_STATUS_BAD_REQUEST)
+          .send({ message: 'Передан некорректный id' });
+      } else if (err.message === 'Карточка с указанным _id не найдена.') {
         res
           .status(constants.HTTP_STATUS_NOT_FOUND)
           .send({ message: 'Карточка с указанным _id не найдена.' });
+      } else {
+        console.log(err);
+        res
+          .status(constants.HTTP_STATUS_INTERNAL_SERVER_ERROR)
+          .send({ message: 'На сервере произошла ошибка.' });
       }
     });
 }
