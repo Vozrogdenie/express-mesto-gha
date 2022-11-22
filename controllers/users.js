@@ -67,17 +67,22 @@ export const newAvatar = (req, res) => {
   User.findByIdAndUpdate(req.user._id, { avatar }, { new: true })
     .then((user) => {
       if (user) return res.send(user);
-      throw new Error();
+      throw new Error('Пользователь с указанным _id не найден.');
     })
     .catch((err) => {
       if (err.name === 'CastError') {
         res
-          .status(constants.HTTP_STATUS_INTERNAL_SERVER_ERROR)
-          .send({ message: 'На сервере произошла ошибка.' });
-      } else {
+          .status(constants.HTTP_STATUS_BAD_REQUEST)
+          .send({ message: 'Передан некорректный id' });
+      } else if (err.message === 'Пользователь с указанным _id не найден.') {
         res
           .status(constants.HTTP_STATUS_NOT_FOUND)
           .send({ message: 'Пользователь с указанным _id не найден.' });
+      } else {
+        console.log(err);
+        res
+          .status(constants.HTTP_STATUS_INTERNAL_SERVER_ERROR)
+          .send({ message: 'На сервере произошла ошибка.' });
       }
     });
 };
@@ -87,17 +92,22 @@ export const newProfile = (req, res) => {
   User.findByIdAndUpdate(req.user._id, { name, about }, { new: true })
     .then((user) => {
       if (user) return res.send(user);
-      throw new Error();
+      throw new Error('Пользователь с указанным _id не найден.');
     })
     .catch((err) => {
       if (err.name === 'CastError') {
         res
-          .status(constants.HTTP_STATUS_INTERNAL_SERVER_ERROR)
-          .send({ message: 'На сервере произошла ошибка.' });
-      } else {
+          .status(constants.HTTP_STATUS_BAD_REQUEST)
+          .send({ message: 'Передан некорректный id' });
+      } else if (err.message === 'Пользователь с указанным _id не найден.') {
         res
           .status(constants.HTTP_STATUS_NOT_FOUND)
           .send({ message: 'Пользователь с указанным _id не найден.' });
+      } else {
+        console.log(err);
+        res
+          .status(constants.HTTP_STATUS_INTERNAL_SERVER_ERROR)
+          .send({ message: 'На сервере произошла ошибка.' });
       }
     });
 };
