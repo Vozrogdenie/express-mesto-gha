@@ -1,11 +1,11 @@
-import mongoose from "mongoose";
+import mongoose from 'mongoose';
 
 const cardSchema = new mongoose.Schema({
   name: {
     type: String,
     minlength: 2,
     maxlength: 30,
-    required: true
+    required: true,
   },
   link: {
     type: String,
@@ -13,16 +13,18 @@ const cardSchema = new mongoose.Schema({
   },
   owner: {
     type: mongoose.Schema.Types.ObjectId,
-    required: true
+    ref: 'user',
+    required: true,
   },
   likes: {
-    type: Array,
-    default: []
+    type: [{ type: mongoose.Schema.Types.ObjectId, ref: 'user' }],
+    default: [],
   },
   createdAt: {
     type: Date,
     default: Date.now,
-  }
-})
+  },
+});
 
-export const Card = mongoose.model('card', cardSchema)
+const Card = mongoose.model('card', cardSchema);
+export default Card;
