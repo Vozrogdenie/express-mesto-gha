@@ -94,7 +94,6 @@ export function dislikeCard(req, res) {
     { new: true },
   ).populate('likes')
     .then((card) => {
-      console.log(1, card);
       if (card) return res.send(card);
       const error = new Error();
       error.name = 'ResourceNotFound';
@@ -105,7 +104,7 @@ export function dislikeCard(req, res) {
         res
           .status(constants.HTTP_STATUS_BAD_REQUEST)
           .send({ message: 'Передан некорректный id' });
-      } else if (err.message === 'ResourceNotFound') {
+      } else if (err.name === 'ResourceNotFound') {
         res
           .status(constants.HTTP_STATUS_NOT_FOUND)
           .send({ message: 'Карточка с указанным _id не найдена.' });
