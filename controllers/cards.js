@@ -35,7 +35,9 @@ export function deleteCard(req, res) {
   Card.findByIdAndRemove(req.params.cardId)
     .then((card) => {
       if (card) return res.send({ data: card });
-      throw new Error({ name: 'ResourceNotFound' });
+      const error = new Error();
+      error.name = 'ResourceNotFound';
+      throw error;
     })
     .catch((err) => {
       if (err.name === 'CastError') {
@@ -63,7 +65,9 @@ export function likeCard(req, res) {
   ).populate('likes')
     .then((card) => {
       if (card) return res.send(card);
-      throw new Error({ name: 'ResourceNotFound' });
+      const error = new Error();
+      error.name = 'ResourceNotFound';
+      throw error;
     })
     .catch((err) => {
       if (err.name === 'CastError') {
@@ -92,7 +96,9 @@ export function dislikeCard(req, res) {
     .then((card) => {
       console.log(1, card);
       if (card) return res.send(card);
-      throw new Error({ name: 'ResourceNotFound' });
+      const error = new Error();
+      error.name = 'ResourceNotFound';
+      throw error;
     })
     .catch((err) => {
       if (err.name === 'CastError') {
