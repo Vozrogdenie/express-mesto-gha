@@ -3,24 +3,12 @@ import User from '../model/user.js';
 
 export const getUsers = (req, res) => {
   User.find({})
-    .then((users) => {
-      if (users.length) return res.send({ data: users });
-      throw new Error('Нет пользователей');
-    })
+    .then((users) => res.send({ data: users }))
     .catch((err) => {
-      if (err.message === 'Нет пользователей') {
-        res
-          .status(constants.HTTP_STATUS_NOT_FOUND)
-          .send({ message: ` Переданы некорректные данные при создании пользователя${err.message}` });
-      } else {
-        console.log(err.message);
-        res
-          .status(constants.HTTP_STATUS_INTERNAL_SERVER_ERROR)
-          .send({ message: 'На сервере произошла ошибка.' });
-      }
+      console.log(err.message);
       res
-        .status(constants.HTTP_STATUS_NOT_FOUND)
-        .send({ message: 'Пользователь не найден' });
+        .status(constants.HTTP_STATUS_INTERNAL_SERVER_ERROR)
+        .send({ message: 'На сервере произошла ошибка.' });
     });
 };
 
@@ -29,7 +17,7 @@ export const createUser = (req, res) => {
   User.create({ name, about, avatar })
     .then((user) => res.status(constants.HTTP_STATUS_CREATED).send({ data: user }))
     .catch((err) => {
-      if (err._message === 'user validation failed') {
+      if (err.name === 'ValidationError') {
         res.status(constants.HTTP_STATUS_BAD_REQUEST).send({
           message: ` Переданы некорректные данные при создании пользователя. ${err.message}`,
         });
@@ -46,14 +34,14 @@ export const getUserById = (req, res) => {
   User.findOne({ _id: req.params.userId })
     .then((user) => {
       if (user) return res.send(user);
-      throw new Error('Пользователь с указанным _id не найден.');
+      throw new Error({ name: 'ResourceNotFound' });
     })
     .catch((err) => {
       if (err.name === 'CastError') {
         res
           .status(constants.HTTP_STATUS_BAD_REQUEST)
           .send({ message: 'Передан некорректный id' });
-      } else if (err.message === 'Пользователь с указанным _id не найден.') {
+      } else if (err.message === 'ResourceNotFound') {
         res
           .status(constants.HTTP_STATUS_NOT_FOUND)
           .send({ message: 'Пользователь с указанным _id не найден.' });
@@ -66,19 +54,19 @@ export const getUserById = (req, res) => {
     });
 };
 
-export const newAvatar = (req, res) => {
+export const setNewAvatar = (req, res) => {
   const { avatar } = req.body;
   User.findByIdAndUpdate(req.user._id, { avatar }, { new: true })
     .then((user) => {
       if (user) return res.send(user);
-      throw new Error('Пользователь с указанным _id не найден.');
+      throw new Error({ name: 'ResourceNotFound' });
     })
     .catch((err) => {
       if (err.name === 'CastError') {
         res
           .status(constants.HTTP_STATUS_BAD_REQUEST)
           .send({ message: 'Передан некорректный id' });
-      } else if (err.message === 'Пользователь с указанным _id не найден.') {
+      } else if (err.name === 'ResourceNotFound') {
         res
           .status(constants.HTTP_STATUS_NOT_FOUND)
           .send({ message: 'Пользователь с указанным _id не найден.' });
@@ -91,12 +79,12 @@ export const newAvatar = (req, res) => {
     });
 };
 
-export const newProfile = (req, res) => {
+export const updateProfile = (req, res) => {
   const { name, about } = req.body;
   User.findByIdAndUpdate(req.user._id, { name, about }, { new: true })
     .then((user) => {
       if (user) return res.send(user);
-      throw new Error('Пользователь с указанным _id не найден.');
+      throw new Error({ name: 'ResourceNotFound' });
     })
     .catch((err) => {
       if (err.name === 'CastError') {
@@ -107,7 +95,7 @@ export const newProfile = (req, res) => {
         res
           .status(constants.HTTP_STATUS_BAD_REQUEST)
           .send({ message: 'Ошибка валидации' });
-      } else if (err.message === 'Пользователь с указанным _id не найден.') {
+      } else if (err.name === 'ResourceNotFound') {
         res
           .status(constants.HTTP_STATUS_NOT_FOUND)
           .send({ message: 'Пользователь с указанным _id не найден.' });

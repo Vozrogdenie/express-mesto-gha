@@ -3,8 +3,8 @@ import {
   getUsers,
   createUser,
   getUserById,
-  newAvatar,
-  newProfile,
+  setNewAvatar,
+  updateProfile,
 } from '../controllers/users.js';
 
 const routerUser = Router();
@@ -12,7 +12,7 @@ const routerUser = Router();
 routerUser.get('/', getUsers);
 routerUser.get('/:userId', getUserById);
 routerUser.post('/', createUser);
-routerUser.patch('/me', newProfile);
-routerUser.patch('/me/avatar', newAvatar);
+routerUser.patch('/me', updateProfile);
+routerUser.patch('/me/avatar', setNewAvatar);
 
 export default routerUser;

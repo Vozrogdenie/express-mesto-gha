@@ -2,25 +2,13 @@ import { constants } from 'http2';
 import Card from '../model/card.js';
 
 export function getCards(req, res) {
-  Card.find({}).populate('likes').populate('owner')
-    .then((cards) => {
-      if (cards.length) return res.send({ data: cards });
-      throw new Error('Карточки не найдены');
-    })
+  Card.find({}).populate(['likes', 'owner'])
+    .then((cards) => res.send({ data: cards }))
     .catch((err) => {
-      if (err.message === 'Карточки не найдены') {
-        res
-          .status(constants.HTTP_STATUS_NOT_FOUND)
-          .send({ message: `${err.message}` });
-      } else {
-        console.log(err.message);
-        res
-          .status(constants.HTTP_STATUS_INTERNAL_SERVER_ERROR)
-          .send({ message: 'На сервере произошла ошибка.' });
-      }
+      console.log(err.message);
       res
-        .status(constants.HTTP_STATUS_NOT_FOUND)
-        .send({ message: 'Карточка не найдена' });
+        .status(constants.HTTP_STATUS_INTERNAL_SERVER_ERROR)
+        .send({ message: 'На сервере произошла ошибка.' });
     });
 }
 
@@ -30,7 +18,7 @@ export function createCard(req, res) {
   Card.create({ name, link, owner: req.user._id })
     .then((card) => res.send({ data: card }))
     .catch((err) => {
-      if (err._message === 'card validation failed') {
+      if (err.name === 'ValidationError') {
         res.status(constants.HTTP_STATUS_BAD_REQUEST).send({
           message: `Переданы некорректные данные при создании карточки. ${err.message}`,
         });
@@ -47,14 +35,14 @@ export function deleteCard(req, res) {
   Card.findByIdAndRemove(req.params.cardId)
     .then((card) => {
       if (card) return res.send({ data: card });
-      throw new Error('Карточка с указанным _id не найдена.');
+      throw new Error({ name: 'ResourceNotFound' });
     })
     .catch((err) => {
       if (err.name === 'CastError') {
         res
           .status(constants.HTTP_STATUS_BAD_REQUEST)
           .send({ message: 'Передан некорректный id' });
-      } else if (err.message === 'Карточка с указанным _id не найдена.') {
+      } else if (err.name === 'ResourceNotFound') {
         res
           .status(constants.HTTP_STATUS_NOT_FOUND)
           .send({ message: 'Карточка с указанным _id не найдена.' });
@@ -75,14 +63,14 @@ export function likeCard(req, res) {
   ).populate('likes')
     .then((card) => {
       if (card) return res.send(card);
-      throw new Error('Карточка с указанным _id не найдена.');
+      throw new Error({ name: 'ResourceNotFound' });
     })
     .catch((err) => {
       if (err.name === 'CastError') {
         res
           .status(constants.HTTP_STATUS_BAD_REQUEST)
           .send({ message: 'Передан некорректный id' });
-      } else if (err.message === 'Карточка с указанным _id не найдена.') {
+      } else if (err.name === 'ResourceNotFound') {
         res
           .status(constants.HTTP_STATUS_NOT_FOUND)
           .send({ message: 'Карточка с указанным _id не найдена.' });
@@ -104,14 +92,14 @@ export function dislikeCard(req, res) {
     .then((card) => {
       console.log(1, card);
       if (card) return res.send(card);
-      throw new Error('Карточка с указанным _id не найдена.');
+      throw new Error({ name: 'ResourceNotFound' });
     })
     .catch((err) => {
       if (err.name === 'CastError') {
         res
           .status(constants.HTTP_STATUS_BAD_REQUEST)
           .send({ message: 'Передан некорректный id' });
-      } else if (err.message === 'Карточка с указанным _id не найдена.') {
+      } else if (err.message === 'ResourceNotFound') {
         res
           .status(constants.HTTP_STATUS_NOT_FOUND)
           .send({ message: 'Карточка с указанным _id не найдена.' });
