@@ -70,6 +70,10 @@ export const setNewAvatar = (req, res) => {
         res
           .status(constants.HTTP_STATUS_BAD_REQUEST)
           .send({ message: 'Передан некорректный id' });
+      } else if (err.name === 'ValidationError') {
+        res
+          .status(constants.HTTP_STATUS_BAD_REQUEST)
+          .send({ message: 'Ошибка валидации' });
       } else if (err.name === 'ResourceNotFound') {
         res
           .status(constants.HTTP_STATUS_NOT_FOUND)
