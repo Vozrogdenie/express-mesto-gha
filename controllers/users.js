@@ -142,7 +142,7 @@ const jwt = jsonwebtoken;
 export const login = (req, res, next) => {
   const { email, password } = req.body;
 
-  return User.findOne({ email }).select('+password')
+  return User.findOne({ email })
     .then((user) => {
       if (bcrpt.compare(password, user.password)) {
         const token = jwt.sign({ _id: user._id }, 'some-secret-key', { expiresIn: '7d' });
