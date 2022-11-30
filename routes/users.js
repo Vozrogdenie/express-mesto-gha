@@ -6,13 +6,14 @@ import {
   setNewAvatar,
   updateProfile,
 } from '../controllers/users.js';
+import auth from '../middlewares/auth.js';
 
 const routerUser = Router();
 
-routerUser.get('/', getUsers);
-routerUser.get('/:userId', getUserById);
-routerUser.post('/', createUser);
-routerUser.patch('/me', updateProfile);
-routerUser.patch('/me/avatar', setNewAvatar);
+routerUser.get('/', auth, getUsers);
+routerUser.get('/:userId', auth, getUserById);
+routerUser.post('/', auth, createUser);
+routerUser.patch('/me', auth, updateProfile);
+routerUser.patch('/me/avatar', auth, setNewAvatar);
 
 export default routerUser;

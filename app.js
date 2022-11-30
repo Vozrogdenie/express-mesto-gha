@@ -1,8 +1,14 @@
 import express from 'express';
 import mongoose from 'mongoose';
 import { constants } from 'http2';
+import { errors } from 'celebrate';
+import cookieParser from 'cookie-parser';
 import routerCard from './routes/cards.js';
 import routerUser from './routes/users.js';
+import auth from './middlewares/auth.js';
+import { createUser, login } from './controllers/users.js';
+
+console.log(process.env.NODE_ENV);
 
 const run = async () => {
   process.on('unhandledRejection', (err) => {
@@ -11,24 +17,38 @@ const run = async () => {
   });
 
   const app = express();
-  const config = { PORT: 3000, HOST: 'localhost' };
+  const config = {
+    PORT: 3000,
+    HOST: 'localhost',
+  };
+
+  app.use(cookieParser());
 
   app.use(express.json());
-  app.use((req, res, next) => {
-    req.user = {
-      _id: '6372633cfbdd1869c7d517f4',
-    };
-    next();
-  });
-
+  app.post('/signup', createUser);
+  app.post('/signin', login);
+  app.use(auth);
   app.use('/users', routerUser);
   app.use('/cards', routerCard);
+
+  app.use(errors());
   app.all('*', (req, res) => {
     res
       .status(constants.HTTP_STATUS_NOT_FOUND)
       .send({
         message: 'Запрашиваемая страница не найдена',
       });
+  });
+  app.use((err, req, res, next) => {
+    const { statusCode = 500, message } = err;
+    res
+      .status(statusCode)
+      .send({
+        message: statusCode === 500
+          ? 'На сервере произошла ошибка'
+          : message,
+      });
+    next();
   });
   mongoose.set('runValidators', true);
   await mongoose.connect('mongodb://localhost:27017/mestodb');

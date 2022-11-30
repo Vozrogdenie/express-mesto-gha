@@ -1,36 +1,53 @@
 import { constants } from 'http2';
+import bcrpt from 'bcryptjs';
+import jsonwebtoken from 'jsonwebtoken';
 import User from '../model/user.js';
 
-export const getUsers = (req, res) => {
+export const getUsers = (req, res, next) => {
   User.find({})
     .then((users) => res.send({ data: users }))
     .catch((err) => {
       console.log(err);
-      res
-        .status(constants.HTTP_STATUS_INTERNAL_SERVER_ERROR)
-        .send({ message: 'На сервере произошла ошибка.' });
+      next({
+        statusCode: constants.HTTP_STATUS_INTERNAL_SERVER_ERROR,
+        message: 'На сервере произошла ошибка.',
+      });
     });
 };
 
-export const createUser = (req, res) => {
-  const { name, about, avatar } = req.body;
-  User.create({ name, about, avatar })
-    .then((user) => res.status(constants.HTTP_STATUS_CREATED).send({ data: user }))
-    .catch((err) => {
-      if (err.name === 'ValidationError') {
-        res.status(constants.HTTP_STATUS_BAD_REQUEST).send({
-          message: ` Переданы некорректные данные при создании пользователя. ${err.message}`,
+export const createUser = (req, res, next) => {
+  const {
+    name,
+    about,
+    avatar,
+    email,
+    password,
+  } = req.body;
+  bcrpt.hash(password, 10)
+    .then((hash) => {
+      User.create({
+        name, about, avatar, email, password: hash,
+      }).then((user) => res.status(constants.HTTP_STATUS_CREATED).send({
+        data: {
+          _id: user._id,
+          email: user.email,
+        },
+      }))
+        .catch((err) => {
+          if (err.name === 'ValidationError') {
+            next({
+              statusCode: constants.HTTP_STATUS_BAD_REQUEST,
+              message: `Переданы некорректные данные при создании пользователя. ${err.message}`,
+            });
+          } else {
+            console.log(err);
+            next();
+          }
         });
-      } else {
-        console.log(err);
-        res.status(constants.HTTP_STATUS_INTERNAL_SERVER_ERROR).send({
-          message: 'На сервере произошла ошибка.',
-        });
-      }
     });
 };
 
-export const getUserById = (req, res) => {
+export const getUserById = (req, res, next) => {
   User.findOne({ _id: req.params.userId })
     .then((user) => {
       if (user) return res.send(user);
@@ -40,23 +57,23 @@ export const getUserById = (req, res) => {
     })
     .catch((err) => {
       if (err.name === 'CastError') {
-        res
-          .status(constants.HTTP_STATUS_BAD_REQUEST)
-          .send({ message: 'Передан некорректный id' });
+        next({
+          statusCode: constants.HTTP_STATUS_BAD_REQUEST,
+          message: 'Передан некорректный id',
+        });
       } else if (err.name === 'ResourceNotFound') {
-        res
-          .status(constants.HTTP_STATUS_NOT_FOUND)
-          .send({ message: 'Пользователь с указанным _id не найден.' });
+        next({
+          statusCode: constants.HTTP_STATUS_NOT_FOUND,
+          message: 'Пользователь с указанным _id не найден.',
+        });
       } else {
         console.log(err);
-        res
-          .status(constants.HTTP_STATUS_INTERNAL_SERVER_ERROR)
-          .send({ message: 'На сервере произошла ошибка.' });
+        next();
       }
     });
 };
 
-export const setNewAvatar = (req, res) => {
+export const setNewAvatar = (req, res, next) => {
   const { avatar } = req.body;
   User.findByIdAndUpdate(req.user._id, { avatar }, { new: true })
     .then((user) => {
@@ -67,27 +84,28 @@ export const setNewAvatar = (req, res) => {
     })
     .catch((err) => {
       if (err.name === 'CastError') {
-        res
-          .status(constants.HTTP_STATUS_BAD_REQUEST)
-          .send({ message: 'Передан некорректный id' });
+        next({
+          statusCode: constants.HTTP_STATUS_BAD_REQUEST,
+          message: 'Передан некорректный id',
+        });
       } else if (err.name === 'ValidationError') {
-        res
-          .status(constants.HTTP_STATUS_BAD_REQUEST)
-          .send({ message: 'Ошибка валидации' });
+        next({
+          statusCode: constants.HTTP_STATUS_BAD_REQUEST,
+          message: 'Ошибка валидации',
+        });
       } else if (err.name === 'ResourceNotFound') {
-        res
-          .status(constants.HTTP_STATUS_NOT_FOUND)
-          .send({ message: 'Пользователь с указанным _id не найден.' });
+        next({
+          statusCode: constants.HTTP_STATUS_NOT_FOUND,
+          message: 'Пользователь с указанным _id не найден.',
+        });
       } else {
         console.log(err);
-        res
-          .status(constants.HTTP_STATUS_INTERNAL_SERVER_ERROR)
-          .send({ message: 'На сервере произошла ошибка.' });
+        next();
       }
     });
 };
 
-export const updateProfile = (req, res) => {
+export const updateProfile = (req, res, next) => {
   const { name, about } = req.body;
   User.findByIdAndUpdate(req.user._id, { name, about }, { new: true })
     .then((user) => {
@@ -98,22 +116,50 @@ export const updateProfile = (req, res) => {
     })
     .catch((err) => {
       if (err.name === 'CastError') {
-        res
-          .status(constants.HTTP_STATUS_BAD_REQUEST)
-          .send({ message: 'Передан некорректный id' });
+        next({
+          statusCode: constants.HTTP_STATUS_BAD_REQUEST,
+          message: 'Передан некорректный id',
+        });
       } else if (err.name === 'ValidationError') {
-        res
-          .status(constants.HTTP_STATUS_BAD_REQUEST)
-          .send({ message: 'Ошибка валидации' });
+        next({
+          statusCode: constants.HTTP_STATUS_BAD_REQUEST,
+          message: 'Ошибка валидации',
+        });
       } else if (err.name === 'ResourceNotFound') {
-        res
-          .status(constants.HTTP_STATUS_NOT_FOUND)
-          .send({ message: 'Пользователь с указанным _id не найден.' });
+        next({
+          statusCode: constants.HTTP_STATUS_NOT_FOUND,
+          message: 'Пользователь с указанным _id не найден.',
+        });
       } else {
         console.log(err);
-        res
-          .status(constants.HTTP_STATUS_INTERNAL_SERVER_ERROR)
-          .send({ message: 'На сервере произошла ошибка.' });
+        next();
       }
+    });
+};
+
+const jwt = jsonwebtoken;
+
+export const login = (req, res, next) => {
+  const { email, password } = req.body;
+
+  return User.findOne({ email }).select('+password')
+    .then((user) => {
+      if (bcrpt.compare(password, user.password)) {
+        const token = jwt.sign({ _id: user._id }, 'some-secret-key', { expiresIn: '7d' });
+        return res.cokie('jwt', token, {
+          httpOnly: true,
+          sameSite: true,
+        });
+      }
+      const error = new Error();
+      error.name = 'Unauthorised';
+      error.message = 'Неправильный логин или пароль';
+      throw error;
+    })
+    .catch((err) => {
+      next({
+        statusCode: constants.HTTP_STATUS_UNAUTHORIZED,
+        message: err.message,
+      });
     });
 };
