@@ -7,7 +7,7 @@ import routerCard from './routes/cards.js';
 import routerUser from './routes/users.js';
 import auth from './middlewares/auth.js';
 import { createUser, login } from './controllers/users.js';
-import validateCreateUser from './validation/users.js';
+import validateCreateUser, { validateLogin } from './validation/users.js';
 
 console.log(process.env.NODE_ENV);
 
@@ -27,7 +27,7 @@ const run = async () => {
 
   app.use(express.json());
   app.post('/signup', validateCreateUser, createUser);
-  app.post('/signin', login);
+  app.post('/signin', validateLogin, login);
   app.use(auth);
   app.use('/users', routerUser);
   app.use('/cards', routerCard);

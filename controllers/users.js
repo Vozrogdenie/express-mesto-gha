@@ -31,6 +31,9 @@ export const createUser = (req, res, next) => {
         data: {
           _id: user._id,
           email: user.email,
+          name: user.name,
+          about: user.about,
+          avatar: user.avatar,
         },
       }))
         .catch((err) => {
@@ -38,6 +41,11 @@ export const createUser = (req, res, next) => {
             next({
               statusCode: constants.HTTP_STATUS_BAD_REQUEST,
               message: `Переданы некорректные данные при создании пользователя. ${err.message}`,
+            });
+          } else if (err.code === 11000) {
+            next({
+              statusCode: constants.HTTP_STATUS_CONFLICT,
+              message: 'Email уже существует',
             });
           } else {
             console.log(err);
@@ -144,7 +152,7 @@ export const login = (req, res, next) => {
 
   return User.findOne({ email })
     .then((user) => {
-      if (bcrpt.compare(password, user.password)) {
+      if (user && bcrpt.compare(password, user.password)) {
         const token = jwt.sign({ _id: user._id }, 'some-secret-key', { expiresIn: '7d' });
         return res.cokie('jwt', token, {
           httpOnly: true,
@@ -152,14 +160,21 @@ export const login = (req, res, next) => {
         });
       }
       const error = new Error();
-      error.name = 'Unauthorised';
+      error.name = 'UserNotFound';
       error.message = 'Неправильный логин или пароль';
       throw error;
     })
     .catch((err) => {
-      next({
-        statusCode: constants.HTTP_STATUS_UNAUTHORIZED,
-        message: err.message,
-      });
+      if (err.name === 'UserNotFound') {
+        next({
+          statusCode: constants.HTTP_STATUS_NOT_FOUND,
+          message: 'Пользователь не найден',
+        });
+      } else {
+        next({
+          statusCode: constants.HTTP_STATUS_UNAUTHORIZED,
+          message: err.message,
+        });
+      }
     });
 };
