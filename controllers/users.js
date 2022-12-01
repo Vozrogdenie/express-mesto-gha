@@ -150,31 +150,26 @@ const jwt = jsonwebtoken;
 export const login = (req, res, next) => {
   const { email, password } = req.body;
 
-  return User.findOne({ email })
+  return User.findOne({ email }).select('+password')
     .then((user) => {
       if (user && bcrpt.compare(password, user.password)) {
         const token = jwt.sign({ _id: user._id }, 'some-secret-key', { expiresIn: '7d' });
-        return res.cokie('jwt', token, {
+        return res.cookie('jwt', token, {
           httpOnly: true,
           sameSite: true,
+        }).send({
+          status: 'success',
         });
       }
       const error = new Error();
-      error.name = 'UserNotFound';
+      error.name = 'Unauthorized';
       error.message = 'Неправильный логин или пароль';
       throw error;
     })
     .catch((err) => {
-      if (err.name === 'UserNotFound') {
-        next({
-          statusCode: constants.HTTP_STATUS_NOT_FOUND,
-          message: 'Пользователь не найден',
-        });
-      } else {
-        next({
-          statusCode: constants.HTTP_STATUS_UNAUTHORIZED,
-          message: err.message,
-        });
-      }
+      next({
+        statusCode: constants.HTTP_STATUS_UNAUTHORIZED,
+        message: err.message,
+      });
     });
 };

@@ -7,7 +7,7 @@ import routerCard from './routes/cards.js';
 import routerUser from './routes/users.js';
 import auth from './middlewares/auth.js';
 import { createUser, login } from './controllers/users.js';
-import validateCreateUser, { validateLogin } from './validation/users.js';
+import { validateCreateUser, validateLogin } from './validation/users.js';
 
 console.log(process.env.NODE_ENV);
 

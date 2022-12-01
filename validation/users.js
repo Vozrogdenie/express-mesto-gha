@@ -36,5 +36,3 @@ export const validateLogin = celebrate({
     password: Joi.string().required(),
   }),
 });
-
-export default validateCreateUser;
