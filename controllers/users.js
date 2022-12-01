@@ -27,7 +27,15 @@ export const createUser = (req, res, next) => {
     .then((hash) => {
       User.create({
         name, about, avatar, email, password: hash,
-      }).then((user) => res.status(constants.HTTP_STATUS_CREATED).send({ data: user }))
+      }).then((user) => res.status(constants.HTTP_STATUS_CREATED).send({
+        data: {
+          _id: user._id,
+          email: user.email,
+          name: user.name,
+          about: user.about,
+          avatar: user.avatar,
+        },
+      }))
         .catch((err) => {
           if (err.name === 'ValidationError') {
             next({
@@ -44,6 +52,32 @@ export const createUser = (req, res, next) => {
             next();
           }
         });
+    });
+};
+
+export const getMe = (req, res, next) => {
+  User.findOne({ _id: req.user._id })
+    .then((user) => {
+      if (user) return res.send(user);
+      const error = new Error();
+      error.name = 'ResourceNotFound';
+      throw error;
+    })
+    .catch((err) => {
+      if (err.name === 'CastError') {
+        next({
+          statusCode: constants.HTTP_STATUS_BAD_REQUEST,
+          message: 'Передан некорректный id',
+        });
+      } else if (err.name === 'ResourceNotFound') {
+        next({
+          statusCode: constants.HTTP_STATUS_NOT_FOUND,
+          message: 'Пользователь с указанным _id не найден.',
+        });
+      } else {
+        console.log(err);
+        next();
+      }
     });
 };
 

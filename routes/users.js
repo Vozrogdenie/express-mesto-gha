@@ -5,6 +5,7 @@ import {
   getUserById,
   setNewAvatar,
   updateProfile,
+  getMe,
 } from '../controllers/users.js';
 import auth from '../middlewares/auth.js';
 import {
@@ -14,7 +15,8 @@ import {
 const routerUser = Router();
 
 routerUser.get('/', getUsers);
-routerUser.get('/:userId', validateGetUserById, auth, getUserById);
+routerUser.get('/me', auth, getMe);
+routerUser.get('/:userId', validateGetUserById, getUserById);
 routerUser.post('/', validateCreateUser, auth, createUser);
 routerUser.patch('/me', validateEditUser, auth, updateProfile);
 routerUser.patch('/me/avatar', validateUserAvatar, auth, setNewAvatar);

@@ -28,7 +28,6 @@ const run = async () => {
   app.use(express.json());
   app.post('/signup', validateCreateUser, createUser);
   app.post('/signin', validateLogin, login);
-  app.use(auth);
   app.use('/users', routerUser);
   app.use('/cards', routerCard);
 
