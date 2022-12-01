@@ -7,13 +7,16 @@ import {
   updateProfile,
 } from '../controllers/users.js';
 import auth from '../middlewares/auth.js';
+import {
+  validateUserAvatar, validateCreateUser, validateEditUser, validateGetUserById,
+} from '../validation/users.js';
 
 const routerUser = Router();
 
 routerUser.get('/', auth, getUsers);
-routerUser.get('/:userId', auth, getUserById);
-routerUser.post('/', auth, createUser);
-routerUser.patch('/me', auth, updateProfile);
-routerUser.patch('/me/avatar', auth, setNewAvatar);
+routerUser.get('/:userId', validateGetUserById, auth, getUserById);
+routerUser.post('/', validateCreateUser, auth, createUser);
+routerUser.patch('/me', validateEditUser, auth, updateProfile);
+routerUser.patch('/me/avatar', validateUserAvatar, auth, setNewAvatar);
 
 export default routerUser;
