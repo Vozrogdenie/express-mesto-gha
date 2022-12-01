@@ -7,6 +7,7 @@ import routerCard from './routes/cards.js';
 import routerUser from './routes/users.js';
 import auth from './middlewares/auth.js';
 import { createUser, login } from './controllers/users.js';
+import validateCreateUser from './validation/users.js';
 
 console.log(process.env.NODE_ENV);
 
@@ -25,7 +26,7 @@ const run = async () => {
   app.use(cookieParser());
 
   app.use(express.json());
-  app.post('/signup', createUser);
+  app.post('/signup', validateCreateUser, createUser);
   app.post('/signin', login);
   app.use(auth);
   app.use('/users', routerUser);
