@@ -13,7 +13,7 @@ import {
 
 const routerUser = Router();
 
-routerUser.get('/', auth, getUsers);
+routerUser.get('/', getUsers);
 routerUser.get('/:userId', validateGetUserById, auth, getUserById);
 routerUser.post('/', validateCreateUser, auth, createUser);
 routerUser.patch('/me', validateEditUser, auth, updateProfile);

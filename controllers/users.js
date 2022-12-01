@@ -27,15 +27,7 @@ export const createUser = (req, res, next) => {
     .then((hash) => {
       User.create({
         name, about, avatar, email, password: hash,
-      }).then((user) => res.status(constants.HTTP_STATUS_CREATED).send({
-        data: {
-          _id: user._id,
-          email: user.email,
-          name: user.name,
-          about: user.about,
-          avatar: user.avatar,
-        },
-      }))
+      }).then((user) => res.status(constants.HTTP_STATUS_CREATED).send({ data: user }))
         .catch((err) => {
           if (err.name === 'ValidationError') {
             next({
@@ -154,12 +146,7 @@ export const login = (req, res, next) => {
     .then((user) => {
       if (user && bcrpt.compare(password, user.password)) {
         const token = jwt.sign({ _id: user._id }, 'some-secret-key', { expiresIn: '7d' });
-        return res.cookie('jwt', token, {
-          httpOnly: true,
-          sameSite: true,
-        }).send({
-          status: 'success',
-        });
+        return res.send({ token });
       }
       const error = new Error();
       error.name = 'Unauthorized';
