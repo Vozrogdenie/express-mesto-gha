@@ -34,7 +34,7 @@ export function createCard(req, res, next) {
 export function deleteCard(req, res, next) {
   Card.findById(req.params.cardId)
     .then((card) => {
-      if (card && card.owner !== req.user._id) {
+      if (card && card.owner.toString() !== req.user._id) {
         return res.status(constants.HTTP_STATUS_FORBIDDEN).send({
           message: 'Forbiden',
         });

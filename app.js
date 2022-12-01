@@ -5,7 +5,6 @@ import { errors } from 'celebrate';
 import cookieParser from 'cookie-parser';
 import routerCard from './routes/cards.js';
 import routerUser from './routes/users.js';
-import auth from './middlewares/auth.js';
 import { createUser, login } from './controllers/users.js';
 import { validateCreateUser, validateLogin } from './validation/users.js';
 
