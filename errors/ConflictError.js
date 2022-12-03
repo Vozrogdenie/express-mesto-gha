@@ -1,4 +1,3 @@
-/* eslint-disable import/prefer-default-export */
 import { constants } from 'http2';
 
 export class ConflictError extends Error {

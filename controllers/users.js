@@ -3,7 +3,7 @@ import bcrpt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import User from '../model/user.js';
 import {
-  BadRequestError, ConflictError, NotFoundError, UnauthorizedError,
+  BadRequestError, ConflictError, NotFoundError,
 } from '../errors/Error.js';
 
 export const getUsers = (req, res, next) => {
@@ -66,7 +66,7 @@ export const getMe = (req, res, next) => {
 };
 
 export const getUserById = (req, res, next) => {
-  User.findOne({ _id: req.params.userId })
+  User.findById({ _id: req.params.userId })
     .then((user) => {
       if (user) return res.send(user);
       return next(new NotFoundError('Пользователь с указанным _id не найден.'));
@@ -124,11 +124,8 @@ export const login = (req, res, next) => {
 
   return User.findUserByCredentials(email, password)
     .then((user) => {
-      if (user && bcrpt.compare(password, user.password)) {
-        const token = jwt.sign({ _id: user._id }, 'some-secret-key', { expiresIn: '7d' });
-        return res.send({ token });
-      }
-      return next(new UnauthorizedError('Неправильный логин или пароль'));
+      const token = jwt.sign({ _id: user._id }, 'some-secret-key', { expiresIn: '7d' });
+      return res.send({ token });
     })
     .catch((err) => {
       next(err);

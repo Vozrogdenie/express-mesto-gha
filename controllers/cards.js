@@ -28,11 +28,11 @@ export function createCard(req, res, next) {
 export function deleteCard(req, res, next) {
   Card.findById(req.params.cardId)
     .then((card) => {
-      if (card && card.owner.toString() !== req.user._id) {
-        return next(new ForbiddenError('Forbiden'));
-      }
       if (!card) {
         return next(new NotFoundError('Карточка с указанным _id не найдена.'));
+      }
+      if (card.owner.toString() !== req.user._id) {
+        return next(new ForbiddenError('Forbiden'));
       }
       return card.remove()
         .then((deletedCard) => res.send({ data: deletedCard }))
@@ -52,7 +52,7 @@ export function likeCard(req, res, next) {
     req.params.cardId,
     { $addToSet: { likes: req.user._id } },
     { new: true },
-  ).populate('likes')
+  ).populate(['likes', 'owner'])
     .then((card) => {
       if (card) return res.send(card);
       return next(new NotFoundError('Карточка с указанным _id не найдена.'));
