@@ -8,8 +8,6 @@ import { createUser, login } from './controllers/users.js';
 import { validateCreateUser, validateLogin } from './validation/users.js';
 import { NotFoundError } from './errors/NotFoundError.js';
 
-console.log(process.env.NODE_ENV);
-
 const run = async () => {
   process.on('unhandledRejection', (err) => {
     console.error(err);
@@ -41,7 +39,7 @@ const run = async () => {
           ? 'На сервере произошла ошибка'
           : message,
       });
-    next();
+    next(err);
   });
   mongoose.set('runValidators', true);
   await mongoose.connect('mongodb://localhost:27017/mestodb');

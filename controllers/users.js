@@ -11,10 +11,7 @@ export const getUsers = (req, res, next) => {
     .then((users) => res.send({ data: users }))
     .catch((err) => {
       console.log(err);
-      next({
-        statusCode: constants.HTTP_STATUS_INTERNAL_SERVER_ERROR,
-        message: 'На сервере произошла ошибка.',
-      });
+      next(err);
     });
 };
 
@@ -46,7 +43,7 @@ export const createUser = (req, res, next) => {
             next(new ConflictError('Email уже существует'));
           } else {
             console.log(err);
-            next();
+            next(err);
           }
         });
     });
@@ -63,7 +60,7 @@ export const getMe = (req, res, next) => {
         next(new BadRequestError('Передан некорректный id'));
       } else {
         console.log(err);
-        next();
+        next(err);
       }
     });
 };
@@ -79,7 +76,7 @@ export const getUserById = (req, res, next) => {
         next(new BadRequestError('Передан некорректный id'));
       } else {
         console.log(err);
-        next();
+        next(err);
       }
     });
 };
@@ -98,7 +95,7 @@ export const setNewAvatar = (req, res, next) => {
         next(new BadRequestError('Ошибка валидации'));
       } else {
         console.log(err);
-        next();
+        next(err);
       }
     });
 };
@@ -117,7 +114,7 @@ export const updateProfile = (req, res, next) => {
         next(new BadRequestError('Ошибка валидации'));
       } else {
         console.log(err);
-        next();
+        next(err);
       }
     });
 };

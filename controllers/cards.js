@@ -6,7 +6,7 @@ export function getCards(req, res, next) {
     .then((cards) => res.send({ data: cards }))
     .catch((err) => {
       console.log(err.message);
-      next();
+      next(err);
     });
 }
 
@@ -20,7 +20,7 @@ export function createCard(req, res, next) {
         next(new BadRequestError('Переданы некорректные данные при создании карточки.'));
       } else {
         console.log(err.message);
-        next();
+        next(err);
       }
     });
 }
@@ -41,7 +41,7 @@ export function deleteCard(req, res, next) {
             next(new BadRequestError('Передан некорректный id'));
           } else {
             console.log(err);
-            next();
+            next(err);
           }
         });
     });
@@ -62,7 +62,7 @@ export function likeCard(req, res, next) {
         next(new BadRequestError('Передан некорректный id'));
       } else {
         console.log(err);
-        next();
+        next(err);
       }
     });
 }
@@ -82,7 +82,7 @@ export function dislikeCard(req, res, next) {
         next(new BadRequestError('Передан некорректный id'));
       } else {
         console.log(err);
-        next();
+        next(err);
       }
     });
 }
