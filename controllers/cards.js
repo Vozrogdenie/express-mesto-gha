@@ -1,4 +1,4 @@
-import { constants } from 'http2';
+import { BadRequestError, ForbiddenError, NotFoundError } from '../errors/Error.js';
 import Card from '../model/card.js';
 
 export function getCards(req, res, next) {
@@ -6,10 +6,7 @@ export function getCards(req, res, next) {
     .then((cards) => res.send({ data: cards }))
     .catch((err) => {
       console.log(err.message);
-      next({
-        statusCode: constants.HTTP_STATUS_INTERNAL_SERVER_ERROR,
-        message: 'На сервере произошла ошибка.',
-      });
+      next();
     });
 }
 
@@ -20,10 +17,7 @@ export function createCard(req, res, next) {
     .then((card) => res.send({ data: card }))
     .catch((err) => {
       if (err.name === 'ValidationError') {
-        next({
-          statusCode: constants.HTTP_STATUS_BAD_REQUEST,
-          message: `Переданы некорректные данные при создании карточки. ${err.message}`,
-        });
+        next(new BadRequestError('Переданы некорректные данные при создании карточки.'));
       } else {
         console.log(err.message);
         next();
@@ -35,28 +29,16 @@ export function deleteCard(req, res, next) {
   Card.findById(req.params.cardId)
     .then((card) => {
       if (card && card.owner.toString() !== req.user._id) {
-        return res.status(constants.HTTP_STATUS_FORBIDDEN).send({
-          message: 'Forbiden',
-        });
+        return next(new ForbiddenError('Forbiden'));
       }
-      return Card.findByIdAndRemove(req.params.cardId)
-        .then((deletedCard) => {
-          if (deletedCard) return res.send({ data: deletedCard });
-          const error = new Error();
-          error.name = 'ResourceNotFound';
-          throw error;
-        })
+      if (!card) {
+        return next(new NotFoundError('Карточка с указанным _id не найдена.'));
+      }
+      return card.remove()
+        .then((deletedCard) => res.send({ data: deletedCard }))
         .catch((err) => {
           if (err.name === 'CastError') {
-            next({
-              statusCode: constants.HTTP_STATUS_BAD_REQUEST,
-              message: 'Передан некорректный id',
-            });
-          } else if (err.name === 'ResourceNotFound') {
-            next({
-              statusCode: constants.HTTP_STATUS_NOT_FOUND,
-              message: 'Карточка с указанным _id не найдена.',
-            });
+            next(new BadRequestError('Передан некорректный id'));
           } else {
             console.log(err);
             next();
@@ -73,21 +55,11 @@ export function likeCard(req, res, next) {
   ).populate('likes')
     .then((card) => {
       if (card) return res.send(card);
-      const error = new Error();
-      error.name = 'ResourceNotFound';
-      throw error;
+      return next(new NotFoundError('Карточка с указанным _id не найдена.'));
     })
     .catch((err) => {
       if (err.name === 'CastError') {
-        next({
-          statusCode: constants.HTTP_STATUS_BAD_REQUEST,
-          message: 'Передан некорректный id',
-        });
-      } else if (err.name === 'ResourceNotFound') {
-        next({
-          statusCode: constants.HTTP_STATUS_NOT_FOUND,
-          message: 'Карточка с указанным _id не найдена.',
-        });
+        next(new BadRequestError('Передан некорректный id'));
       } else {
         console.log(err);
         next();
@@ -103,21 +75,11 @@ export function dislikeCard(req, res, next) {
   ).populate('likes')
     .then((card) => {
       if (card) return res.send(card);
-      const error = new Error();
-      error.name = 'ResourceNotFound';
-      throw error;
+      return next(new NotFoundError('Карточка с указанным _id не найдена.'));
     })
     .catch((err) => {
       if (err.name === 'CastError') {
-        next({
-          statusCode: constants.HTTP_STATUS_BAD_REQUEST,
-          message: 'Передан некорректный id',
-        });
-      } else if (err.name === 'ResourceNotFound') {
-        next({
-          statusCode: constants.HTTP_STATUS_NOT_FOUND,
-          message: 'Карточка с указанным _id не найдена.',
-        });
+        next(new BadRequestError('Передан некорректный id'));
       } else {
         console.log(err);
         next();

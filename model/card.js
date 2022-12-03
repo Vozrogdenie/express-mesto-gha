@@ -1,4 +1,5 @@
 import mongoose from 'mongoose';
+import { regExpUrl } from '../utils/regex.js';
 
 const cardSchema = new mongoose.Schema({
   name: {
@@ -10,6 +11,10 @@ const cardSchema = new mongoose.Schema({
   link: {
     type: String,
     required: true,
+    validate: {
+      validator: (link) => link.match(regExpUrl),
+      message: () => 'Некорректная ссылка',
+    },
   },
   owner: {
     type: mongoose.Schema.Types.ObjectId,

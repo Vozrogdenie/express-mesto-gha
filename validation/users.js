@@ -26,7 +26,7 @@ export const validateEditUser = celebrate({
 
 export const validateUserAvatar = celebrate({
   body: Joi.object().keys({
-    avatar: Joi.string().regex(regExpUrl),
+    avatar: Joi.string().regex(regExpUrl).required(),
   }),
 });
 

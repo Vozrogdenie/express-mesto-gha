@@ -1,7 +1,10 @@
 import { constants } from 'http2';
 import bcrpt from 'bcryptjs';
-import jsonwebtoken from 'jsonwebtoken';
+import jwt from 'jsonwebtoken';
 import User from '../model/user.js';
+import {
+  BadRequestError, ConflictError, NotFoundError, UnauthorizedError,
+} from '../errors/Error.js';
 
 export const getUsers = (req, res, next) => {
   User.find({})
@@ -38,15 +41,9 @@ export const createUser = (req, res, next) => {
       }))
         .catch((err) => {
           if (err.name === 'ValidationError') {
-            next({
-              statusCode: constants.HTTP_STATUS_BAD_REQUEST,
-              message: `Переданы некорректные данные при создании пользователя. ${err.message}`,
-            });
+            next(new BadRequestError('Переданы некорректные данные при создании пользователя.'));
           } else if (err.code === 11000) {
-            next({
-              statusCode: constants.HTTP_STATUS_CONFLICT,
-              message: 'Email уже существует',
-            });
+            next(new ConflictError('Email уже существует'));
           } else {
             console.log(err);
             next();
@@ -59,21 +56,11 @@ export const getMe = (req, res, next) => {
   User.findOne({ _id: req.user._id })
     .then((user) => {
       if (user) return res.send(user);
-      const error = new Error();
-      error.name = 'ResourceNotFound';
-      throw error;
+      return next(new NotFoundError('Пользователь с указанным _id не найден.'));
     })
     .catch((err) => {
       if (err.name === 'CastError') {
-        next({
-          statusCode: constants.HTTP_STATUS_BAD_REQUEST,
-          message: 'Передан некорректный id',
-        });
-      } else if (err.name === 'ResourceNotFound') {
-        next({
-          statusCode: constants.HTTP_STATUS_NOT_FOUND,
-          message: 'Пользователь с указанным _id не найден.',
-        });
+        next(new BadRequestError('Передан некорректный id'));
       } else {
         console.log(err);
         next();
@@ -85,21 +72,11 @@ export const getUserById = (req, res, next) => {
   User.findOne({ _id: req.params.userId })
     .then((user) => {
       if (user) return res.send(user);
-      const error = new Error();
-      error.name = 'ResourceNotFound';
-      throw error;
+      return next(new NotFoundError('Пользователь с указанным _id не найден.'));
     })
     .catch((err) => {
       if (err.name === 'CastError') {
-        next({
-          statusCode: constants.HTTP_STATUS_BAD_REQUEST,
-          message: 'Передан некорректный id',
-        });
-      } else if (err.name === 'ResourceNotFound') {
-        next({
-          statusCode: constants.HTTP_STATUS_NOT_FOUND,
-          message: 'Пользователь с указанным _id не найден.',
-        });
+        next(new BadRequestError('Передан некорректный id'));
       } else {
         console.log(err);
         next();
@@ -112,26 +89,13 @@ export const setNewAvatar = (req, res, next) => {
   User.findByIdAndUpdate(req.user._id, { avatar }, { new: true })
     .then((user) => {
       if (user) return res.send(user);
-      const error = new Error();
-      error.name = 'ResourceNotFound';
-      throw error;
+      return next(new NotFoundError('Пользователь с указанным _id не найден.'));
     })
     .catch((err) => {
       if (err.name === 'CastError') {
-        next({
-          statusCode: constants.HTTP_STATUS_BAD_REQUEST,
-          message: 'Передан некорректный id',
-        });
+        next(new BadRequestError('Передан некорректный id'));
       } else if (err.name === 'ValidationError') {
-        next({
-          statusCode: constants.HTTP_STATUS_BAD_REQUEST,
-          message: 'Ошибка валидации',
-        });
-      } else if (err.name === 'ResourceNotFound') {
-        next({
-          statusCode: constants.HTTP_STATUS_NOT_FOUND,
-          message: 'Пользователь с указанным _id не найден.',
-        });
+        next(new BadRequestError('Ошибка валидации'));
       } else {
         console.log(err);
         next();
@@ -144,26 +108,13 @@ export const updateProfile = (req, res, next) => {
   User.findByIdAndUpdate(req.user._id, { name, about }, { new: true })
     .then((user) => {
       if (user) return res.send(user);
-      const error = new Error();
-      error.name = 'ResourceNotFound';
-      throw error;
+      return next(new NotFoundError('Пользователь с указанным _id не найден.'));
     })
     .catch((err) => {
       if (err.name === 'CastError') {
-        next({
-          statusCode: constants.HTTP_STATUS_BAD_REQUEST,
-          message: 'Передан некорректный id',
-        });
+        next(new BadRequestError('Передан некорректный id'));
       } else if (err.name === 'ValidationError') {
-        next({
-          statusCode: constants.HTTP_STATUS_BAD_REQUEST,
-          message: 'Ошибка валидации',
-        });
-      } else if (err.name === 'ResourceNotFound') {
-        next({
-          statusCode: constants.HTTP_STATUS_NOT_FOUND,
-          message: 'Пользователь с указанным _id не найден.',
-        });
+        next(new BadRequestError('Ошибка валидации'));
       } else {
         console.log(err);
         next();
@@ -171,26 +122,18 @@ export const updateProfile = (req, res, next) => {
     });
 };
 
-const jwt = jsonwebtoken;
-
 export const login = (req, res, next) => {
   const { email, password } = req.body;
 
-  return User.findOne({ email }).select('+password')
+  return User.findUserByCredentials(email, password)
     .then((user) => {
       if (user && bcrpt.compare(password, user.password)) {
         const token = jwt.sign({ _id: user._id }, 'some-secret-key', { expiresIn: '7d' });
         return res.send({ token });
       }
-      const error = new Error();
-      error.name = 'Unauthorized';
-      error.message = 'Неправильный логин или пароль';
-      throw error;
+      return next(new UnauthorizedError('Неправильный логин или пароль'));
     })
     .catch((err) => {
-      next({
-        statusCode: constants.HTTP_STATUS_UNAUTHORIZED,
-        message: err.message,
-      });
+      next(err);
     });
 };

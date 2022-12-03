@@ -1,12 +1,12 @@
 import express from 'express';
 import mongoose from 'mongoose';
-import { constants } from 'http2';
 import { errors } from 'celebrate';
 import cookieParser from 'cookie-parser';
 import routerCard from './routes/cards.js';
 import routerUser from './routes/users.js';
 import { createUser, login } from './controllers/users.js';
 import { validateCreateUser, validateLogin } from './validation/users.js';
+import { NotFoundError } from './errors/NotFoundError.js';
 
 console.log(process.env.NODE_ENV);
 
@@ -31,13 +31,7 @@ const run = async () => {
   app.use('/cards', routerCard);
 
   app.use(errors());
-  app.all('*', (req, res) => {
-    res
-      .status(constants.HTTP_STATUS_NOT_FOUND)
-      .send({
-        message: 'Запрашиваемая страница не найдена',
-      });
-  });
+  app.all('*', (req, res, next) => next(new NotFoundError('Запрашиваемая страница не найдена')));
   app.use((err, req, res, next) => {
     const { statusCode = 500, message } = err;
     res

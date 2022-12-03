@@ -16,7 +16,7 @@ const routerUser = Router();
 
 routerUser.get('/', auth, getUsers);
 routerUser.get('/me', auth, getMe);
-routerUser.get('/:userId', validateGetUserById, getUserById);
+routerUser.get('/:userId', validateGetUserById, auth, getUserById);
 routerUser.post('/', validateCreateUser, auth, createUser);
 routerUser.patch('/me', validateEditUser, auth, updateProfile);
 routerUser.patch('/me/avatar', validateUserAvatar, auth, setNewAvatar);
