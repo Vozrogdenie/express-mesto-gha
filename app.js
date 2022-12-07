@@ -7,6 +7,9 @@ import routerUser from './routes/users.js';
 import { createUser, login } from './controllers/users.js';
 import { validateCreateUser, validateLogin } from './validation/users.js';
 import { NotFoundError } from './errors/NotFoundError.js';
+import requestLogger from './middlewares/logger.js';
+import errorLogger from './middlewares/error.js';
+import allowedCors from './middlewares/cors.js';
 
 const run = async () => {
   process.on('unhandledRejection', (err) => {
@@ -19,15 +22,14 @@ const run = async () => {
     PORT: 3000,
     HOST: 'localhost',
   };
-
+  app.use(requestLogger);
   app.use(cookieParser());
-
   app.use(express.json());
   app.post('/signup', validateCreateUser, createUser);
   app.post('/signin', validateLogin, login);
   app.use('/users', routerUser);
   app.use('/cards', routerCard);
-
+  app.use(errorLogger);
   app.use(errors());
   app.all('*', (req, res, next) => next(new NotFoundError('Запрашиваемая страница не найдена')));
   app.use((err, req, res, next) => {
@@ -41,6 +43,16 @@ const run = async () => {
       });
     next(err);
   });
+
+  app.use((req, res, next) => {
+    const { origin } = req.headers;
+    if (allowedCors.includes(origin)) {
+      res.header('Access-Control-Allow-Origin', origin);
+    }
+
+    next();
+  });
+
   mongoose.set('runValidators', true);
   await mongoose.connect('mongodb://localhost:27017/mestodb');
   const server = app.listen(config.PORT, config.HOST, () => {

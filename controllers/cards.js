@@ -72,7 +72,7 @@ export function dislikeCard(req, res, next) {
     req.params.cardId,
     { $pull: { likes: req.user._id } },
     { new: true },
-  ).populate('likes')
+  ).populate(['likes', 'owner'])
     .then((card) => {
       if (card) return res.send(card);
       return next(new NotFoundError('Карточка с указанным _id не найдена.'));
